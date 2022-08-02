@@ -1,0 +1,119 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      backend:
+        aliases:
+          - "postgres"
+  configserver:
+    image: configserver:latest
+    ports:
+      - "8071:8071"
+    environment:
+      - "SERVER_PORT=8071"
+    networks:
+      backend:
+        aliases:
+          - "configserver"
+  eurekaserver:
+    image: eurekaserver:latest
+    ports:
+      - "8070:8070"
+    environment:
+      - "SERVER_PORT=8070"
+    networks:
+      backend:
+        aliases:
+          - "eurekaserver"
+  gatewayserver:
+    image: gatewayserver:latest
+    ports:
+      - "8072:8072"
+    environment:
+      - "SERVER_PORT=8072"
+      - "SPRING_CONFIG_IMPORT=configserver:http://configserver:8071"
+    networks:
+      backend:
+        aliases:
+          - "gatewayserver"
+    depends_on:
+      - "configserver"
+  keycloak:
+    image: jboss/keycloak:18.0.2
+    restart: unless-stopped
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_SCHEMA: keycloak
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "db"
+    networks:
+      backend:
+        aliases:
+          - "keycloak"
+  licensingservice:
+    image: licensing-service:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    ports:
+      - "8180:8080"
+    environment:
+      - "SPRING_CONFIG_IMPORT=configserver:http://configserver:8071"
+    networks:
+      backend:
+        aliases:
+          - "licenseservice"
+    depends_on:
+      - "configserver"
+      - "eurekaserver"
+      - "db"
+  organizationservice:
+    image: organization-service:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    ports:
+      - "8181:8080"
+    environment:
+      - "SPRING_CONFIG_IMPORT=configserver:http://configserver:8071"
+    networks:
+      backend:
+        aliases:
+          - "organizationservice"
+    depends_on:
+      - "configserver"
+      - "eurekaserver"
+      - "db"
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db:
+    driver: local

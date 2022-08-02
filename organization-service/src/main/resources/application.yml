@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: organization-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eurekaserver:8070/eureka

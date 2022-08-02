@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: licensing-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eurekaserver:8070/eureka
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+
+feign:
+  circuitbreaker:
+    enabled: true
+    alphanumeric-ids:
+      enabled: true
+
+resilience4j:
+  retry:
+    instances:
+      licensing-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.util.concurrent.TimeoutException
+  timelimiter:
+    instances:
+      OrganizationFeignClientgetOrganization:
+        timeout-duration: 1s
+  circuitbreaker:
+    instances:
+      OrganizationFeignClientgetOrganization:
+        base-config: default
+        record-exceptions:
+          - com.optimagrowth.exception.OGException
+      licensing-service:
+        base-config: default
+        failure-rate-threshold: 10
+        record-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+    configs:
+      default:
+        register-health-indicator: true
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 10s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 1s
+
+logging:
+  level:
+    com.optimagrowth: DEBUG
+    io.github.resilience4j: DEBUG
