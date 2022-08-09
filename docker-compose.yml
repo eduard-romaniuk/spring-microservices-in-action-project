@@ -49,26 +49,8 @@ services:
           - "gatewayserver"
     depends_on:
       - "configserver"
-  keycloak:
-    image: jboss/keycloak:18.0.2
-    restart: unless-stopped
-    environment:
-      DB_VENDOR: postgres
-      DB_ADDR: postgres
-      DB_DATABASE: postgres
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_SCHEMA: keycloak
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-    ports:
-      - "8080:8080"
-    depends_on:
-      - "db"
-    networks:
-      backend:
-        aliases:
-          - "keycloak"
+      - "licensingservice"
+      - "organizationservice"
   licensingservice:
     image: licensing-service:latest
     deploy:
