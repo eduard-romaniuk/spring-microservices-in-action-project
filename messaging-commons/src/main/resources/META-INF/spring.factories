@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.optimagrowth.exception.ExceptionCommonsAutoConfiguration
+  com.optimagrowth.messaging.config.MessagingCommonsAutoConfig

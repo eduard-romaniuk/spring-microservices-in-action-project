@@ -3,6 +3,16 @@ spring:
     name: licensing-service
   datasource:
     driver-class-name: org.postgresql.Driver
+  cloud:
+    function:
+      definition: organizationChangeMessageReceiver
+    stream:
+      bindings:
+        organizationChangeMessageReceiver-in-0:
+          destination: organizations
+      kafka:
+        binder:
+          brokers: kafka:9092
 eureka:
   instance:
     prefer-ip-address: true

@@ -1,19 +1,26 @@
 package com.optimagrowth.organization.service;
 
+import com.optimagrowth.messaging.MessageSender;
+import com.optimagrowth.messaging.MessageTopic;
+import com.optimagrowth.messaging.organization.ChangeType;
+import com.optimagrowth.messaging.organization.OrganizationChangeMessage;
 import com.optimagrowth.organization.exception.OGError;
 import com.optimagrowth.organization.model.Organization;
 import com.optimagrowth.organization.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrganizationServiceImpl implements OrganizationService {
     private final OrganizationRepository repository;
+    private final MessageSender messageSender;
 
     @Override
     public Organization getOrganization(String organizationId) {
@@ -25,16 +32,22 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public Organization createOrganization(Organization organization) {
         log.debug("createOrganization(license={})", organization);
-        if (organization != null)
-            return repository.save(organization);
+        if (organization != null) {
+            Organization created = repository.save(organization);
+            sendOrganizationChangeMessage(ChangeType.CREATED, created.getOrganizationId());
+            return created;
+        }
         return null;
     }
 
     @Override
     public Organization updateOrganization(Organization organization) {
         log.debug("updateOrganization(license={})", organization);
-        if (organization != null)
-            return repository.save(organization);
+        if (organization != null) {
+            Organization saved = repository.save(organization);
+            sendOrganizationChangeMessage(ChangeType.UPDATED, saved.getOrganizationId());
+            return saved;
+        }
         return null;
     }
 
@@ -43,5 +56,15 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void deleteOrganization(String organizationId) {
         log.debug("deleteLicense(organizationId={})", organizationId);
         repository.deleteByOrganizationId(organizationId);
+        sendOrganizationChangeMessage(ChangeType.DELETED, organizationId);
+    }
+
+    private void sendOrganizationChangeMessage(ChangeType changeType, String organizationId) {
+        OrganizationChangeMessage message = OrganizationChangeMessage.builder()
+                .traceId(UUID.randomUUID().toString())
+                .changeType(changeType)
+                .organizationId(organizationId)
+                .build();
+        messageSender.send(MessageTopic.ORGANIZATIONS, message);
     }
 }

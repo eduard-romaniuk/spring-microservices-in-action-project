@@ -19,6 +19,7 @@
         <java.version>17</java.version>
         <spring-cloud.version>2021.0.3</spring-cloud.version>
         <exception-commons.version>0.0.1-SNAPSHOT</exception-commons.version>
+        <messaging-commons.version>0.0.1-SNAPSHOT</messaging-commons.version>
     </properties>
 
     <dependencies>
@@ -31,6 +32,7 @@
     <modules>
         <!-- libraries -->
         <module>exception-commons</module>
+        <module>messaging-commons</module>
 
         <!-- infrastructure -->
         <module>configserver</module>
