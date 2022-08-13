@@ -1,18 +1,13 @@
 package com.optimagrowth.messaging.organization;
 
-import com.optimagrowth.messaging.OGMessage;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
-@Getter
-@Setter
-@SuperBuilder
+@Data
 @NoArgsConstructor
-@ToString(callSuper = true)
-public class OrganizationChangeMessage extends OGMessage {
+@AllArgsConstructor
+public class OrganizationChangeMessage {
     private ChangeType changeType;
     private String organizationId;
 }

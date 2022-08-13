@@ -9,7 +9,7 @@ import org.springframework.cloud.stream.function.StreamBridge;
 public class MessageSender {
     private final StreamBridge streamBridge;
 
-    public <T extends OGMessage> void send(MessageTopic topic, T message) {
+    public void send(MessageTopic topic, Object message) {
         streamBridge.send(topic.name().toLowerCase(), message);
     }
 }

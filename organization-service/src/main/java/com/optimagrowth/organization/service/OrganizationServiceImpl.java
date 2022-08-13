@@ -9,11 +9,9 @@ import com.optimagrowth.organization.model.Organization;
 import com.optimagrowth.organization.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -60,11 +58,9 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     private void sendOrganizationChangeMessage(ChangeType changeType, String organizationId) {
-        OrganizationChangeMessage message = OrganizationChangeMessage.builder()
-                .traceId(UUID.randomUUID().toString())
-                .changeType(changeType)
-                .organizationId(organizationId)
-                .build();
-        messageSender.send(MessageTopic.ORGANIZATIONS, message);
+        messageSender.send(
+                MessageTopic.ORGANIZATIONS,
+                new OrganizationChangeMessage(changeType, organizationId)
+        );
     }
 }
