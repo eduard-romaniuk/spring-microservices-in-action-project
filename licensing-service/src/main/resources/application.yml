@@ -3,6 +3,8 @@ spring:
     name: licensing-service
   datasource:
     driver-class-name: org.postgresql.Driver
+  redis:
+    host: redis
   cloud:
     function:
       definition: organizationChangeMessageReceiver

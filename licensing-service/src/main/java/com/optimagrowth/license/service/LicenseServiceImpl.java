@@ -1,12 +1,11 @@
 package com.optimagrowth.license.service;
 
-import com.optimagrowth.license.feign.OrganizationFeignClient;
 import com.optimagrowth.license.config.ResilienceConstants;
 import com.optimagrowth.license.dto.FullLicenseInfoDto;
-import com.optimagrowth.license.dto.OrganizationDto;
 import com.optimagrowth.license.exception.OGError;
 import com.optimagrowth.license.model.License;
 import com.optimagrowth.license.repository.LicenseRepository;
+import com.optimagrowth.license.service.external.ExternalOrganizationService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LicenseServiceImpl implements LicenseService {
     private final LicenseRepository repository;
-    private final OrganizationFeignClient organizationClient;
+    private final ExternalOrganizationService externalOrganizationService;
 
     @Override
     public License getLicense(String licenseId, String organizationId) {
@@ -61,18 +60,14 @@ public class LicenseServiceImpl implements LicenseService {
         return repository.findAllByOrganizationId(organizationId);
     }
 
-    private List<License> findLicensesFallback(String organizationId, Throwable throwable) {
-        log.error("Find licenses fallback", throwable);
-        return List.of();
-    }
-
     @Override
     public FullLicenseInfoDto getFullLicense(String licenseId, String organizationId) {
         return FullLicenseInfoDto.from(getLicense(licenseId, organizationId))
-                .withOrganizationInfo(getOrganizationInfo(organizationId));
+                .withOrganizationInfo(externalOrganizationService.getOrganization(organizationId));
     }
 
-    private OrganizationDto getOrganizationInfo(String organizationId) {
-        return organizationClient.getOrganization(organizationId);
+    private List<License> findLicensesFallback(String organizationId, Throwable throwable) {
+        log.error("Find licenses fallback", throwable);
+        return List.of();
     }
 }

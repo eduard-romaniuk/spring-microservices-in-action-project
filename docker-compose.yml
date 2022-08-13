@@ -108,6 +108,7 @@ services:
       - "configserver"
       - "eurekaserver"
       - "db"
+      - "redisserver"
   organizationservice:
     image: organization-service:latest
     deploy:

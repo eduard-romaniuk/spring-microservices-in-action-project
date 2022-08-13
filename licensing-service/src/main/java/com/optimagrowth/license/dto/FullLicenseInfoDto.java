@@ -26,10 +26,10 @@ public class FullLicenseInfoDto {
     }
 
     public FullLicenseInfoDto withOrganizationInfo(OrganizationDto organizationInfo) {
-        organizationName = organizationInfo.name();
-        contactName = organizationInfo.contactName();
-        contactEmail = organizationInfo.contactEmail();
-        contactPhone = organizationInfo.contactPhone();
+        organizationName = organizationInfo.getName();
+        contactName = organizationInfo.getContactName();
+        contactEmail = organizationInfo.getContactEmail();
+        contactPhone = organizationInfo.getContactPhone();
         return this;
     }
 }
